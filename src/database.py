@@ -87,6 +87,16 @@ def get_return_for_order(conn, order_id):
     return dict(row) if row else None
 
 
+def get_return(conn, return_id):
+    row = conn.execute("SELECT * FROM returns WHERE id = ?", (return_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def set_return_status(conn, return_id, status):
+    conn.execute("UPDATE returns SET status = ? WHERE id = ?", (status, return_id))
+    conn.commit()
+
+
 if __name__ == "__main__":
     connection = connect()
     init_db(connection)
