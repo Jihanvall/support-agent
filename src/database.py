@@ -18,6 +18,13 @@ CREATE TABLE IF NOT EXISTS orders (
     ordered_on TEXT NOT NULL,
     delivered_on TEXT
 );
+CREATE TABLE IF NOT EXISTS returns (
+    id INTEGER PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id),
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_on TEXT NOT NULL
+);
 """
 
 CUSTOMERS = [
@@ -64,6 +71,20 @@ def get_orders_for_customer(conn, customer_id):
         (customer_id,),
     ).fetchall()
     return [dict(row) for row in rows]
+
+
+def create_return(conn, order_id, reason, created_on):
+    cursor = conn.execute(
+        "INSERT INTO returns (order_id, reason, status, created_on) VALUES (?, ?, 'pending_confirmation', ?)",
+        (order_id, reason, created_on),
+    )
+    conn.commit()
+    return cursor.lastrowid
+
+
+def get_return_for_order(conn, order_id):
+    row = conn.execute("SELECT * FROM returns WHERE order_id = ?", (order_id,)).fetchone()
+    return dict(row) if row else None
 
 
 if __name__ == "__main__":
